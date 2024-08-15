@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Message Encryptor</title>
+  <link rel="stylesheet" href="css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Simple Message Encryptor</h2>
+      <p>Encrypt and decrypt your messages securely.</p>
+      <textarea id="inputText" placeholder="Enter your message here..."></textarea>
+      <button class="copy-button" id="copyInputButton" disabled>Copy Decrypted Text</button>
+      <textarea id="outputText" placeholder="Your encrypted/decrypted message will appear here..."></textarea>
+      <button class="copy-button" id="copyOutputButton" disabled>Copy Encrypted Text</button>
+      <div class="input-group">
+        <input type="password" id="encryptionKey" placeholder="Enter encryption key..." minlength="8" title="Minimum 8 characters required">
+        <i class="fas fa-lock" id="lockIcon"></i>
+      </div>
+      <div id="message" class="message"></div>
+      <div class="button-container">
+        <button id="encryptButton" disabled>Encrypt</button>
+        <button id="decryptButton" disabled>Decrypt</button>
+      </div>
+      <button id="popOutButton">Pop Out</button>
+      <button id="clearButton" class="copy-button">Clear</button>
+    </div>
+  </div>
+  <script src="js/crypto-js.min.js"></script>
+  <script src="js/popup.js"></script>
+</body>
+</html>
