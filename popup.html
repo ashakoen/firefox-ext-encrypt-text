@@ -12,9 +12,9 @@
     <div class="card">
       <h2>Simple Message Encryptor</h2>
       <p>Encrypt and decrypt your messages securely.</p>
-      <textarea id="inputText" placeholder="Enter your message here..."></textarea>
+      <textarea id="inputText" placeholder="Enter text to encrypt..."></textarea>
       <button class="copy-button" id="copyInputButton" disabled>Copy Decrypted Text</button>
-      <textarea id="outputText" placeholder="Your encrypted/decrypted message will appear here..."></textarea>
+      <textarea id="outputText" placeholder="Encrypted text will appear here..."></textarea>
       <button class="copy-button" id="copyOutputButton" disabled>Copy Encrypted Text</button>
       <div class="input-group">
         <input type="password" id="encryptionKey" placeholder="Enter encryption key..." minlength="8" title="Minimum 8 characters required">
@@ -25,8 +25,24 @@
         <button id="encryptButton" disabled>Encrypt</button>
         <button id="decryptButton" disabled>Decrypt</button>
       </div>
+      <button id="keyManagementButton" class="copy-button">Key Management</button>
       <button id="popOutButton">Pop Out</button>
       <button id="clearButton" class="copy-button">Clear</button>
+    </div>
+  </div>
+  <div id="keyManagementModal" class="modal">
+    <div class="modal-content">
+      <h3>Key Management</h3>
+      <input type="text" id="keyName" placeholder="Key Name">
+      <div class="input-group">
+        <input type="password" id="keyValue" placeholder="Key Value">
+        <i class="fas fa-lock" id="modalLockIcon"></i>
+      </div>
+      <button id="saveForSession">Save for Session</button>
+      <select id="savedKeys"></select>
+      <button id="loadKey">Load Key</button>
+      <button id="clearAllKeysButton">Clear All Keys</button>
+      <button id="closeModal">Close</button>
     </div>
   </div>
   <script src="js/crypto-js.min.js"></script>
