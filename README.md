@@ -4,13 +4,23 @@ Simple Message Encryptor is a Firefox extension that allows users to encrypt and
 
 ## Features
 
-- Encrypt text using a user-provided key.
+- Encrypt text using a user-provided key with enhanced security measures.
 - Decrypt text using the same key.
 - Copy encrypted and decrypted text to the clipboard.
-- Key management system for storing and retrieving encryption keys.
-- Session-based key storage for enhanced security.
+- Improved key management system for storing and retrieving encryption keys.
+- Session-based key storage with enhanced security using PBKDF2.
 - Clear all input fields and stored keys with a single button.
 - Responsive design for a seamless user experience.
+
+## Important Update Notice
+
+Version 2.0 introduces a significant update to the encryption method, improving security but introducing a breaking change:
+
+- The encryption now uses PBKDF2 for key derivation, random salt for each encryption, and a random initialization vector (IV).
+- Due to these changes, text encrypted with previous versions of the extension cannot be decrypted with version 2.0 or later.
+- Stored keys from previous versions are not compatible with the new version.
+
+Please ensure you decrypt any important messages with the old version before updating.
 
 ## Installation
 
@@ -42,6 +52,8 @@ Simple Message Encryptor is a Firefox extension that allows users to encrypt and
    - Select the key name from the dropdown list.
    - Click "Load Key" to populate the encryption key field with the saved key.
 4. Use "Clear All Keys" to remove all stored keys from the session.
+
+Note: Saved keys are now stored as derived keys and cannot be viewed in their original form.
 
 ## File Structure
 

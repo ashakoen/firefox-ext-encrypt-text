@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let lastAction = 'encrypt';
+let encryptionKey;
 
 function generateEncryptionKey() {
   const extensionId = browser.runtime.id;
@@ -128,7 +129,7 @@ function handleKeyInput() {
   encryptButton.disabled = !isKeyValid;
   decryptButton.disabled = !isKeyValid;
 
-  updateLockIcon(); // Changed from updatePasswordStrength
+  updateLockIcon();
   updateCopyButtons();
 }
 
@@ -149,13 +150,40 @@ function copyText(elementId) {
   showMessage('info', 'Copied to clipboard!');
 }
 
+function generateSalt() {
+  return CryptoJS.lib.WordArray.random(128/8); // 128 bits
+}
+
+function generateIV() {
+  return CryptoJS.lib.WordArray.random(128/8); // 128 bits for AES
+}
+
+function deriveKey(password, salt) {
+  return CryptoJS.PBKDF2(password, salt, {
+    keySize: 256/32, // 256 bits
+    iterations: 10000
+  });
+}
+
 function encryptMessage() {
   const message = document.getElementById('inputText').value;
-  const key = document.getElementById('encryptionKey').value;
-  if (message && key) {
+  const password = document.getElementById('encryptionKey').value;
+  if (message && password) {
     try {
-      const encryptedMessage = CryptoJS.AES.encrypt(message, key).toString();
-      document.getElementById('outputText').value = encryptedMessage;
+      const salt = generateSalt();
+      const iv = generateIV();
+      const key = deriveKey(password, salt);
+      
+      const encrypted = CryptoJS.AES.encrypt(message, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+      
+      // Combine the salt, iv, and ciphertext for storage
+      const result = salt.toString() + iv.toString() + encrypted.toString();
+      
+      document.getElementById('outputText').value = result;
       document.getElementById('inputText').value = ''; // Clear input
       updateCopyButtons();
       showMessage('info', 'Message encrypted successfully!');
@@ -171,11 +199,24 @@ function encryptMessage() {
 
 function decryptMessage() {
   const encryptedMessage = document.getElementById('outputText').value;
-  const key = document.getElementById('encryptionKey').value;
-  if (encryptedMessage && key) {
+  const password = document.getElementById('encryptionKey').value;
+  
+  if (encryptedMessage && password) {
     try {
-      const bytes = CryptoJS.AES.decrypt(encryptedMessage, key);
-      const decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
+      const salt = CryptoJS.enc.Hex.parse(encryptedMessage.substr(0, 32));
+      const iv = CryptoJS.enc.Hex.parse(encryptedMessage.substr(32, 32));
+      const encrypted = encryptedMessage.substring(64);
+      
+      const key = deriveKey(password, salt);
+      
+      const decrypted = CryptoJS.AES.decrypt(encrypted, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+      
+      const decryptedMessage = decrypted.toString(CryptoJS.enc.Utf8);
+      
       if (!decryptedMessage) throw new Error('Invalid decryption');
       document.getElementById('inputText').value = decryptedMessage;
       document.getElementById('outputText').value = ''; // Clear output
@@ -373,7 +414,12 @@ function saveKeyForSession() {
     return;
   }
   
-  storeKeyForSession(name, key).then(() => {
+  // Use the derived key for storing
+  const salt = generateSalt();
+  const derivedKey = deriveKey(key, salt);
+  const storedValue = salt.toString() + derivedKey.toString();
+  
+  storeKeyForSession(name, storedValue).then(() => {
     showMessage('info', 'Key saved for session');
     updateSavedKeysList();
     document.getElementById('keyName').value = '';
@@ -384,13 +430,15 @@ function saveKeyForSession() {
   });
 }
 
-
 function loadSelectedKey() {
   const name = document.getElementById('savedKeys').value;
   if (name) {
-    getSessionKey(name).then(key => {
-      if (key) {
-        document.getElementById('encryptionKey').value = key;
+    getSessionKey(name).then(storedValue => {
+      if (storedValue) {
+        const salt = CryptoJS.enc.Hex.parse(storedValue.substr(0, 32));
+        const derivedKey = storedValue.substring(32);
+        // We can't recover the original password, so we'll use the derived key directly
+        document.getElementById('encryptionKey').value = derivedKey;
         hideKeyManagementModal();
         handleKeyInput(); // Update UI based on the loaded key
         showMessage('info', 'Key loaded successfully');
