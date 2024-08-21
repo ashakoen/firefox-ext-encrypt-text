@@ -173,16 +173,14 @@ function encryptMessage() {
       const salt = generateSalt();
       const iv = generateIV();
       const key = deriveKey(password, salt);
-      
+
       const encrypted = CryptoJS.AES.encrypt(message, key, {
         iv: iv,
         mode: CryptoJS.mode.CBC,
         padding: CryptoJS.pad.Pkcs7
       });
-      
-      // Combine the salt, iv, and ciphertext for storage
-      const result = salt.toString() + iv.toString() + encrypted.toString();
-      
+
+      const result = salt.toString(CryptoJS.enc.Hex) + iv.toString(CryptoJS.enc.Hex) + encrypted.toString(); // Proper encoding
       document.getElementById('outputText').value = result;
       document.getElementById('inputText').value = ''; // Clear input
       updateCopyButtons();
@@ -200,23 +198,23 @@ function encryptMessage() {
 function decryptMessage() {
   const encryptedMessage = document.getElementById('outputText').value;
   const password = document.getElementById('encryptionKey').value;
-  
+
   if (encryptedMessage && password) {
     try {
       const salt = CryptoJS.enc.Hex.parse(encryptedMessage.substr(0, 32));
       const iv = CryptoJS.enc.Hex.parse(encryptedMessage.substr(32, 32));
       const encrypted = encryptedMessage.substring(64);
-      
+
       const key = deriveKey(password, salt);
-      
+
       const decrypted = CryptoJS.AES.decrypt(encrypted, key, {
         iv: iv,
         mode: CryptoJS.mode.CBC,
         padding: CryptoJS.pad.Pkcs7
       });
-      
+
       const decryptedMessage = decrypted.toString(CryptoJS.enc.Utf8);
-      
+
       if (!decryptedMessage) throw new Error('Invalid decryption');
       document.getElementById('inputText').value = decryptedMessage;
       document.getElementById('outputText').value = ''; // Clear output
